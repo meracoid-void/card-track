@@ -2,10 +2,8 @@
 // Do not edit manually
 export const environment = {
   production: true,
-  supabase: {
-    url: 'YOUR_SUPABASE_URL',
-    anonKey: 'YOUR_SUPABASE_ANON_KEY',
-  },
   bypassAuth: false,
   justTcgApiKey: 'YOUR_JUSTTCG_API_KEY',
+  supabaseUrl: 'YOUR_SUPABASE_URL',
+  supabaseAnonKey: 'YOUR_SUPABASE_ANON_KEY',
 };

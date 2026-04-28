@@ -19,6 +19,7 @@ echo "Creating development environment file..."
 cat > "card-inventory/src/environments/environment.ts" <<EOF
 export const environment = {
   production: false,
+  bypassAuth: false,
   justTcgApiKey: '${JUSTTCG_API_KEY}',
   supabaseUrl: '${SUPABASE_URL}',
   supabaseAnonKey: '${SUPABASE_ANON_KEY}',
@@ -32,12 +33,10 @@ cat > "card-inventory/src/environments/environment.prod.ts" <<EOF
 // Do not edit manually
 export const environment = {
   production: true,
-  supabase: {
-    url: '${SUPABASE_URL}',
-    anonKey: '${SUPABASE_ANON_KEY}',
-  },
   bypassAuth: false,
   justTcgApiKey: '${JUSTTCG_API_KEY}',
+  supabaseUrl: '${SUPABASE_URL}',
+  supabaseAnonKey: '${SUPABASE_ANON_KEY}',
 };
 EOF
 

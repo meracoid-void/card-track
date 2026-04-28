@@ -13,8 +13,8 @@ export class SupabaseAuthService {
 
   constructor() {
     this.supabase = createClient(
-      environment.supabase.url,
-      environment.supabase.anonKey
+      environment.supabaseUrl,
+      environment.supabaseAnonKey
     );
 
     // If bypass auth is enabled, create a mock user
