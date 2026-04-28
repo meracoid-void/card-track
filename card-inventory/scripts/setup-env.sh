@@ -16,6 +16,15 @@ echo "============================="
 # Create development environment file
 echo "Creating development environment file..."
 
+cat > "card-inventory/src/environments/environment.ts" <<EOF
+export const environment = {
+  production: false,
+  justTcgApiKey: '${JUSTTCG_API_KEY}',
+  supabaseUrl: '${SUPABASE_URL}',
+  supabaseAnonKey: '${SUPABASE_ANON_KEY}',
+};
+EOF
+
 # Create production environment file from Netlify environment variables
 echo "Creating production environment file..."
 cat > card-inventory/src/environments/environment.prod.ts <<EOF
