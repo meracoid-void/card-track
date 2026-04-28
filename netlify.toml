@@ -1,7 +1,7 @@
 [build]
   base = "card-inventory"
   command = "bash scripts/setup-env.sh && npm run build -- --configuration production"
-  publish = "dist/card-inventory"
+  publish = "dist/card-inventory/browser"
 
 [build.environment]
   NODE_VERSION = "20.19.0"
