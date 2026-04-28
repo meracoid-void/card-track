@@ -1,6 +1,6 @@
 [build]
   base = "card-inventory"
-  command = "bash scripts/setup-env.sh && npm run build"
+  command = "bash scripts/setup-env.sh && npm run build -- --configuration production"
   publish = "dist/card-inventory"
 
 [build.environment]
