@@ -6,10 +6,10 @@ import { InventoryComponent } from './features/inventory/inventory.component';
 import { authGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/search', pathMatch: 'full' },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'search', component: SearchComponent, canActivate: [authGuard] },
   { path: 'inventory', component: InventoryComponent, canActivate: [authGuard] },
-  { path: '**', redirectTo: '/search' },
+  { path: '**', redirectTo: '/login' },
 ];

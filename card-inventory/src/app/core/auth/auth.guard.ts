@@ -8,6 +8,9 @@ import { inject } from '@angular/core';
 import { map, take } from 'rxjs/operators';
 
 export const authGuard: CanActivateFn = (route, state) => {
+  // Temporarily bypass authentication for testing
+  return true;
+  
   const authService = inject(SupabaseAuthService);
   const router = inject(Router);
 
