@@ -3,6 +3,9 @@
 # Setup environment variables for Angular build
 # This script is run by Netlify before the build
 
+# Ensure environments directory exists
+mkdir -p src/environments
+
 # Create environment file from Netlify environment variables
 cat > src/environments/environment.prod.ts <<EOF
 export const environment = {
