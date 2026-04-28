@@ -1,0 +1,68 @@
+.inventory-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.inventory-card {
+  margin-bottom: 30px;
+}
+
+.spinner {
+  margin: 20px auto;
+}
+
+.no-cards {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+
+  a {
+    color: #667eea;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.inventory-table {
+  width: 100%;
+}
+
+.card-thumbnail {
+  width: 50px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.profit {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.loss {
+  color: #c62828;
+  font-weight: 600;
+}
+
+.total-value {
+  font-weight: 600;
+}
+
+.summary {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+
+  p {
+    margin: 8px 0;
+  }
+}

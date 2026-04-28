@@ -1,0 +1,118 @@
+<div class="inventory-container">
+  <mat-card class="inventory-card">
+    <mat-card-header>
+      <mat-card-title>My Card Inventory</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-spinner *ngIf="loading" class="spinner"></mat-spinner>
+
+      <div *ngIf="!loading && cards.length === 0" class="no-cards">
+        <p>You haven't added any cards yet. <a routerLink="/search">Search for cards</a></p>
+      </div>
+
+      <div *ngIf="!loading && cards.length > 0" class="table-container">
+        <table mat-table [dataSource]="cards" class="inventory-table">
+          <!-- Card Image Column -->
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef>Image</th>
+            <td mat-cell *matCellDef="let card">
+              <img [src]="card.imageUrl" alt="{{ card.cardName }}" class="card-thumbnail" />
+            </td>
+          </ng-container>
+
+          <!-- Card Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Card Name</th>
+            <td mat-cell *matCellDef="let card">{{ card.cardName }}</td>
+          </ng-container>
+
+          <!-- Game Column -->
+          <ng-container matColumnDef="game">
+            <th mat-header-cell *matHeaderCellDef>Game</th>
+            <td mat-cell *matCellDef="let card">
+              {{ getGameDisplayName(card.game) }}
+            </td>
+          </ng-container>
+
+          <!-- Quantity Column -->
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef>Qty</th>
+            <td mat-cell *matCellDef="let card">{{ card.quantity }}</td>
+          </ng-container>
+
+          <!-- Purchase Price Column -->
+          <ng-container matColumnDef="purchasePrice">
+            <th mat-header-cell *matHeaderCellDef>Purchase Price</th>
+            <td mat-cell *matCellDef="let card">
+              ${{ card.purchasePrice | number: '1.2-2' }}
+            </td>
+          </ng-container>
+
+          <!-- Current Price Column -->
+          <ng-container matColumnDef="currentPrice">
+            <th mat-header-cell *matHeaderCellDef>Current Price</th>
+            <td mat-cell *matCellDef="let card">
+              ${{ card.currentPrice | number: '1.2-2' }}
+            </td>
+          </ng-container>
+
+          <!-- Total Value Column -->
+          <ng-container matColumnDef="totalValue">
+            <th mat-header-cell *matHeaderCellDef>Total Value</th>
+            <td mat-cell *matCellDef="let card" class="total-value">
+              ${{ card.quantity * card.currentPrice | number: '1.2-2' }}
+            </td>
+          </ng-container>
+
+          <!-- Profit/Loss Column -->
+          <ng-container matColumnDef="profitLoss">
+            <th mat-header-cell *matHeaderCellDef>Profit/Loss</th>
+            <td
+              mat-cell
+              *matCellDef="let card"
+              [class.profit]="getProfitLoss(card) >= 0"
+              [class.loss]="getProfitLoss(card) < 0"
+            >
+              ${{ getProfitLoss(card) | number: '1.2-2' }}
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let card">
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="deleteCard(card)"
+                matTooltip="Delete"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+      <div *ngIf="!loading && cards.length > 0" class="summary">
+        <p>
+          <strong>Total Invested:</strong>
+          ${{ getTotalInvested() | number: '1.2-2' }}
+        </p>
+        <p>
+          <strong>Current Total Value:</strong>
+          ${{ getTotalCurrentValue() | number: '1.2-2' }}
+        </p>
+        <p
+          [class.profit]="getTotalProfitLoss() >= 0"
+          [class.loss]="getTotalProfitLoss() < 0"
+        >
+          <strong>Total Profit/Loss:</strong>
+          ${{ getTotalProfitLoss() | number: '1.2-2' }}
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

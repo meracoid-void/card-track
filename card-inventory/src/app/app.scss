@@ -1,0 +1,68 @@
+// App-level styles
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 60px;
+}
+
+// Enhanced Material Overrides
+::ng-deep {
+  .mat-mdc-card {
+    &.search-card {
+      background: white;
+      border-radius: 12px;
+
+      .mat-mdc-card-header {
+        padding: 24px 24px 16px 24px;
+      }
+
+      .mat-mdc-card-content {
+        padding: 24px;
+      }
+    }
+  }
+
+  .mat-mdc-form-field {
+    .mdc-text-field {
+      border-radius: 8px;
+    }
+  }
+
+  .mat-mdc-button,
+  .mat-mdc-raised-button {
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &.mat-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    &.mat-accent {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+  }
+
+  .mat-mdc-card-title {
+    margin-bottom: 0;
+  }
+
+  // Keyboard navigation indicator
+  .mat-focus-indicator {
+    &:focus::after {
+      border-radius: 8px;
+    }
+  }
+}

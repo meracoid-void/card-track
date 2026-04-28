@@ -1,0 +1,87 @@
+<div class="search-container">
+  <mat-card class="search-card">
+    <mat-card-header>
+      <mat-card-title>Search Cards</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="searchForm">
+        <div class="game-selector">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Select Game</mat-label>
+            <mat-select formControlName="game">
+              <mat-option *ngFor="let game of supportedGames" [value]="game.value">
+                {{ game.display }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Card Name</mat-label>
+          <input matInput formControlName="cardName" />
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="search()"
+          [disabled]="loading || !searchForm.value.cardName"
+          class="search-button"
+        >
+          <mat-icon>search</mat-icon>
+          Search
+        </button>
+      </form>
+
+      <mat-spinner *ngIf="loading" class="spinner"></mat-spinner>
+
+      <div *ngIf="error" class="error-message">{{ error }}</div>
+
+      <div class="results-grid" *ngIf="results.length > 0">
+        <mat-card *ngFor="let card of results" class="card-result">
+          <mat-card-header>
+            <mat-card-title class="card-title">{{ getCardName(card) }}</mat-card-title>
+          </mat-card-header>
+          <img
+            *ngIf="getCardImage(card)"
+            [src]="getCardImage(card)"
+            alt="{{ getCardName(card) }}"
+            class="card-image"
+          />
+          <mat-card-content>
+            <div class="card-details">
+              <p *ngIf="card.set_name" class="detail">
+                <strong>Set:</strong> {{ card.set_name }}
+              </p>
+              <p *ngIf="card.cardNumber" class="detail">
+                <strong>Number:</strong> {{ card.cardNumber }}
+              </p>
+              <p *ngIf="card.variants && card.variants.length > 0" class="detail">
+                <strong>Variants:</strong> {{ card.variants.length }} available
+              </p>
+            </div>
+            <p class="price">
+              <strong>Price:</strong> {{ getPriceDisplay(card) }}
+            </p>
+          </mat-card-content>
+          <mat-card-actions>
+            <button
+              mat-raised-button
+              color="accent"
+              (click)="openAddDialog(card)"
+              class="add-button"
+            >
+              <mat-icon>shopping_cart</mat-icon>
+              Add
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <div *ngIf="results.length === 0 && !loading && searched" class="no-results">
+        No cards found. Try a different search.
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

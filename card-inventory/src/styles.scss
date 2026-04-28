@@ -1,0 +1,286 @@
+/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+// Include the common styles for Angular Material
+@include mat.core();
+
+// Color palette
+$primary: #667eea;
+$primary-light: #8b9eea;
+$primary-dark: #3d4da6;
+$secondary: #764ba2;
+$accent: #f5576c;
+$success: #4caf50;
+$error: #f44336;
+$warning: #ff9800;
+
+// Global styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  background: #f5f7fa;
+  color: #333;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $primary-dark;
+    text-decoration: underline;
+  }
+}
+
+// Typography
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin-bottom: 12px;
+  color: #1a1a1a;
+}
+
+h1 {
+  font-size: 32px;
+}
+
+h2 {
+  font-size: 28px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+p {
+  line-height: 1.6;
+  color: #555;
+}
+
+// Material overrides
+.mat-mdc-dialog-container {
+  overflow-y: visible !important;
+}
+
+mat-dialog-actions {
+  margin: 0 !important;
+}
+
+.mat-mdc-form-field-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+// Material Select Panel styling
+::ng-deep {
+  .mat-mdc-select-panel {
+    background-color: white !important;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+      0 8px 10px 1px rgba(0, 0, 0, 0.14),
+      0 3px 14px 2px rgba(0, 0, 0, 0.12) !important;
+    z-index: 1000 !important;
+
+    .mat-mdc-optgroup-label,
+    .mat-mdc-option {
+      font-size: 14px;
+    }
+
+    .mat-mdc-option {
+      &:hover:not(.mat-mdc-option-disabled) {
+        background-color: rgba(102, 126, 234, 0.08);
+      }
+
+      &.mat-mdc-option-active {
+        background-color: rgba(102, 126, 234, 0.12);
+        color: #667eea;
+      }
+
+      &.mat-mdc-selected {
+        color: #667eea;
+        font-weight: 600;
+      }
+    }
+  }
+
+  // Target the panel surface/container
+  .mat-mdc-select-panel-wrapper {
+    background-color: white !important;
+  }
+
+  .cdk-overlay-pane {
+    &.mat-mdc-select-panel-above,
+    &.mat-mdc-select-panel {
+      .mat-mdc-select-panel {
+        background-color: white !important;
+      }
+    }
+  }
+
+  // Select trigger styling
+  .mat-mdc-form-field {
+    .mat-mdc-select-trigger {
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+    }
+
+    &.mat-focused .mat-mdc-select-trigger {
+      background-color: #f9f9ff;
+    }
+
+    &:hover .mat-mdc-select-trigger {
+      background-color: #efefef;
+    }
+  }
+
+  // Direct select styling
+  .mdc-select {
+    background-color: #f5f5f5 !important;
+    border-radius: 8px !important;
+
+    &:not(.mdc-select--disabled) {
+      &:hover {
+        background-color: #efefef !important;
+      }
+    }
+  }
+
+  .mdc-select__anchor {
+    background-color: #f5f5f5 !important;
+    border-radius: 8px !important;
+    min-height: 56px;
+
+    &:hover:not(.mdc-select--focused) {
+      background-color: #efefef !important;
+    }
+  }
+
+  .mat-mdc-select-arrow {
+    color: #667eea !important;
+  }
+
+  .mat-mdc-form-field.mat-focused .mat-mdc-select-arrow {
+    color: #667eea !important;
+  }
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+// Select panel list container
+::ng-deep {
+  .mat-mdc-select-panel .ng-trigger {
+    background-color: white !important;
+  }
+
+  .mdc-menu__items,
+  .mdc-list {
+    background-color: white !important;
+  }
+
+  // Ensure overlay panels have white background
+  [class*="cdk-overlay"] {
+    .mat-mdc-select-panel,
+    .mat-mdc-menu-panel {
+      background-color: white !important;
+    }
+  }
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+
+  &:hover {
+    background: #999;
+  }
+}
+
+// Utility classes
+.full-width {
+  width: 100%;
+}
+
+.no-margin {
+  margin: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 {
+  margin-top: 8px;
+}
+
+.mt-2 {
+  margin-top: 16px;
+}
+
+.mt-3 {
+  margin-top: 24px;
+}
+
+.mb-1 {
+  margin-bottom: 8px;
+}
+
+.mb-2 {
+  margin-bottom: 16px;
+}
+
+.mb-3 {
+  margin-bottom: 24px;
+}
+
+.p-1 {
+  padding: 8px;
+}
+
+.p-2 {
+  padding: 16px;
+}
+
+.p-3 {
+  padding: 24px;
+}
+
+// Focus styles for accessibility
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid $primary;
+  outline-offset: 2px;
+}
+
