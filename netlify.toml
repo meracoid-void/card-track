@@ -1,6 +1,7 @@
 [build]
-  command = "cd card-inventory && bash scripts/setup-env.sh && npm run build"
-  publish = "card-inventory/dist/card-inventory"
+  base = "card-inventory"
+  command = "bash scripts/setup-env.sh && npm run build"
+  publish = "dist/card-inventory"
 
 [build.environment]
   NODE_VERSION = "18"
