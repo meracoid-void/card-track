@@ -43,5 +43,5 @@ Thumbs.db
 
 # Environment variables
 .env
-# Auto-generated environment file (overwritten during Netlify build)
-src/environments/environment*.ts
+# Development environment file (keep out of version control)
+src/environments/environment.ts
