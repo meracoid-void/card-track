@@ -47,3 +47,7 @@ CREATE POLICY "Owners can delete pending invitations" ON pending_invitations
       AND cubes.owner_id = auth.uid()
     )
   );
+
+-- For testing: Add a policy to allow anon key to view invitations (REMOVE IN PRODUCTION)
+CREATE POLICY "Allow anon to view pending invitations for testing" ON pending_invitations
+  FOR SELECT USING (true);

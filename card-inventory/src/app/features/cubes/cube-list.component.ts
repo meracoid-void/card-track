@@ -89,6 +89,15 @@ export class CubeListComponent implements OnInit {
       this.snackBar.open('Invitation accepted!', '', { duration: 2000 });
       // Remove from pending and reload cubes
       this.pendingInvitations = this.pendingInvitations.filter(i => i.id !== invitation.id);
+      // Reload cubes to show the newly joined cube
+      this.dbService.getUserCubes$().subscribe(
+        (cubes) => {
+          this.cubes = cubes;
+        },
+        (error) => {
+          console.error('Error reloading cubes:', error);
+        }
+      );
     } catch (error) {
       console.error('Error accepting invitation:', error);
       this.snackBar.open('Failed to accept invitation', '', { duration: 3000 });

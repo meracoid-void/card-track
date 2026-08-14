@@ -20,6 +20,16 @@ DROP POLICY IF EXISTS "Owners can remove participants" ON cube_participants;
 CREATE POLICY "Users can view their own cubes" ON cubes
   FOR SELECT USING (auth.uid() = owner_id);
 
+CREATE POLICY "Users can view cubes they participate in" ON cubes
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM cube_participants 
+      WHERE cube_participants.cube_id = cubes.id 
+      AND cube_participants.user_id = auth.uid() 
+      AND cube_participants.status = 'accepted'
+    )
+  );
+
 CREATE POLICY "Users can create cubes" ON cubes
   FOR INSERT WITH CHECK (auth.uid() = owner_id);
 
@@ -90,6 +100,9 @@ CREATE POLICY "Owners can invite participants" ON cube_participants
       AND cubes.owner_id = auth.uid()
     )
   );
+
+CREATE POLICY "Users can add themselves as participants" ON cube_participants
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can accept/decline their own invites" ON cube_participants
   FOR UPDATE USING (auth.uid() = user_id);

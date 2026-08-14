@@ -683,12 +683,16 @@ export class SupabaseDbService {
       throw new Error('User not authenticated');
     }
 
-    // Remove from pending invitations
-    await supabase
+    // Update pending invitation status to accepted
+    const { error: updateError } = await supabase
       .from('pending_invitations')
-      .delete()
+      .update({ status: 'accepted' })
       .eq('cube_id', cubeId)
       .eq('email', email.toLowerCase().trim());
+
+    if (updateError) {
+      throw updateError;
+    }
 
     // Add to participants
     const { error } = await supabase.from('cube_participants').insert([
