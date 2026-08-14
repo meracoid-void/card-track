@@ -1,12 +1,15 @@
 <h2 mat-dialog-title>Invite Participant</h2>
 <mat-dialog-content>
-  <p>Enter the User ID of the person you want to invite to this cube.</p>
+  <p>Enter the email address of the person you want to invite to this cube.</p>
   <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()">
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>User ID</mat-label>
-      <input matInput formControlName="userId" placeholder="Enter user ID" required>
-      <mat-error *ngIf="inviteForm.get('userId')?.hasError('required')">
-        User ID is required
+      <mat-label>Email Address</mat-label>
+      <input matInput formControlName="email" placeholder="Enter email address" required>
+      <mat-error *ngIf="inviteForm.get('email')?.hasError('required')">
+        Email is required
+      </mat-error>
+      <mat-error *ngIf="inviteForm.get('email')?.hasError('email')">
+        Please enter a valid email address
       </mat-error>
     </mat-form-field>
   </form>

@@ -19,8 +19,8 @@
   </div>
 
   <div *ngIf="!loading && cards.length > 0" class="cards-grid">
-    <mat-card class="card-item" *ngFor="let card of cards">
-      <div class="card-count-badge" *ngIf="getCardCount(card.cardId) > 1">
+    <mat-card class="card-item" *ngFor="let card of getUniqueCards()">
+      <div class="card-count-badge">
         {{ getCardCount(card.cardId) }}x
       </div>
       <div class="card-image-container" *ngIf="card.imageUrl">
@@ -40,7 +40,7 @@
       <mat-card-actions *ngIf="isOwner">
         <button mat-button color="warn" (click)="removeCard(card)">
           <mat-icon>delete</mat-icon>
-          Remove Copy
+          Remove All
         </button>
       </mat-card-actions>
     </mat-card>

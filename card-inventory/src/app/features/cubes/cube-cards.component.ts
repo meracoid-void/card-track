@@ -62,6 +62,17 @@ export class CubeCardsComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
+  getUniqueCards(): CubeCard[] {
+    const uniqueCardIds = [...new Set(this.cards.map(card => card.cardId))];
+    return uniqueCardIds.map(cardId => 
+      this.cards.find(card => card.cardId === cardId)!
+    );
+  }
+
+  getCardCount(cardId: string): number {
+    return this.cards.filter(card => card.cardId === cardId).length;
+  }
+
   openAddCardDialog(): void {
     const dialogRef = this.dialog.open(CubeCardSearchComponent, {
       width: '800px',
@@ -77,10 +88,16 @@ export class CubeCardsComponent implements OnInit, OnDestroy {
   }
 
   removeCard(card: CubeCard): void {
-    if (confirm(`Remove one copy of ${card.cardName} from this cube?`)) {
-      this.dbService.removeCardFromCubeById(card.id).then(
+    const count = this.getCardCount(card.cardId);
+    const message = count > 1 
+      ? `Remove all ${count} copies of ${card.cardName} from this cube?`
+      : `Remove ${card.cardName} from this cube?`;
+    
+    if (confirm(message)) {
+      // Remove all copies of this card
+      this.dbService.removeCardFromCube(this.cubeId, card.cardId).then(
         () => {
-          this.snackBar.open('Card copy removed from cube', '', { duration: 2000 });
+          this.snackBar.open('Card removed from cube', '', { duration: 2000 });
           this.loadCards(); // Refresh the card list
         },
         (error) => {

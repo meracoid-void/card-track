@@ -41,8 +41,44 @@
     }
   }
 
+  .pending-section {
+    margin-bottom: 30px;
+
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .pending-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+
+      .pending-item {
+        .email {
+          font-weight: 500;
+          margin: 0 0 5px 0;
+          color: #333;
+        }
+
+        .status {
+          margin: 0;
+          font-size: 0.9rem;
+          color: #666;
+        }
+      }
+    }
+  }
+
   .participants-table-container {
     margin-top: 20px;
+
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: 15px;
+      color: #333;
+    }
 
     .participants-table {
       width: 100%;

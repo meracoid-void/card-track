@@ -33,16 +33,29 @@ CREATE TABLE IF NOT EXISTS cube_participants (
   UNIQUE(cube_id, user_id)
 );
 
+-- Create pending_invitations table for email-based invitations
+CREATE TABLE IF NOT EXISTS pending_invitations (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  cube_id UUID REFERENCES cubes(id) ON DELETE CASCADE NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  status VARCHAR(50) DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(cube_id, email)
+);
+
 -- Enable RLS on all tables
 ALTER TABLE cubes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cube_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cube_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pending_invitations ENABLE ROW LEVEL SECURITY;
 
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_cubes_owner_id ON cubes(owner_id);
 CREATE INDEX IF NOT EXISTS idx_cube_cards_cube_id ON cube_cards(cube_id);
 CREATE INDEX IF NOT EXISTS idx_cube_participants_cube_id ON cube_participants(cube_id);
 CREATE INDEX IF NOT EXISTS idx_cube_participants_user_id ON cube_participants(user_id);
+CREATE INDEX IF NOT EXISTS idx_pending_invitations_cube_id ON pending_invitations(cube_id);
+CREATE INDEX IF NOT EXISTS idx_pending_invitations_email ON pending_invitations(email);
 
 -- RLS Policies for cubes table
 CREATE POLICY "Users can view their own cubes" ON cubes
@@ -127,6 +140,39 @@ CREATE POLICY "Owners can remove participants" ON cube_participants
     EXISTS (
       SELECT 1 FROM cubes 
       WHERE cubes.id = cube_participants.cube_id 
+      AND cubes.owner_id = auth.uid()
+    )
+  );
+
+-- RLS Policies for pending_invitations table
+CREATE POLICY "Owners can view pending invitations" ON pending_invitations
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM cubes 
+      WHERE cubes.id = pending_invitations.cube_id 
+      AND cubes.owner_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Owners can create pending invitations" ON pending_invitations
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM cubes 
+      WHERE cubes.id = pending_invitations.cube_id 
+      AND cubes.owner_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users can view invitations sent to them" ON pending_invitations
+  FOR SELECT USING (
+    email = (SELECT email FROM auth.users WHERE id = auth.uid())
+  );
+
+CREATE POLICY "Owners can delete pending invitations" ON pending_invitations
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM cubes 
+      WHERE cubes.id = pending_invitations.cube_id 
       AND cubes.owner_id = auth.uid()
     )
   );

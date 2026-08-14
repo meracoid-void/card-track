@@ -26,6 +26,14 @@ export interface CubeParticipant {
   joinedAt: string;
 }
 
+export interface PendingInvitation {
+  id: string;
+  cubeId: string;
+  email: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt: string;
+}
+
 // Frontend-only drafting settings (not stored in database)
 export interface CubeDraftingSettings {
   maxParticipants: number;

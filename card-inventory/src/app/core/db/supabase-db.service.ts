@@ -498,6 +498,43 @@ export class SupabaseDbService {
     }
   }
 
+  async inviteParticipantByEmail(cubeId: string, email: string): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Check if user is the owner of the cube
+    const { data: cubeData, error: cubeError } = await supabase
+      .from('cubes')
+      .select('owner_id')
+      .eq('id', cubeId)
+      .single();
+
+    if (cubeError || !cubeData) {
+      throw new Error('Cube not found');
+    }
+
+    if (cubeData.owner_id !== user.id) {
+      throw new Error('Only cube owners can invite participants');
+    }
+
+    // Add invitation to pending_invitations table
+    const { error } = await supabase.from('pending_invitations').insert([
+      {
+        cube_id: cubeId,
+        email: email.toLowerCase().trim(),
+        status: 'pending',
+      },
+    ]);
+
+    if (error) {
+      throw error;
+    }
+  }
+
   async acceptInvite(cubeId: string): Promise<void> {
     const supabase = this.authService.getSupabaseClient();
     const user = this.getCurrentUser();
@@ -608,6 +645,77 @@ export class SupabaseDbService {
       .from('cube_participants')
       .delete()
       .eq('id', participantId);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async getPendingInvitations$(cubeId: string): Promise<any[]> {
+    const supabase = this.authService.getSupabaseClient();
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('pending_invitations')
+        .select('*')
+        .eq('cube_id', cubeId);
+
+      if (!error && data) {
+        return data;
+      }
+      return [];
+    } catch (err) {
+      console.error('Error fetching pending invitations:', err);
+      return [];
+    }
+  }
+
+  async acceptEmailInvitation(cubeId: string, email: string): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Remove from pending invitations
+    await supabase
+      .from('pending_invitations')
+      .delete()
+      .eq('cube_id', cubeId)
+      .eq('email', email.toLowerCase().trim());
+
+    // Add to participants
+    const { error } = await supabase.from('cube_participants').insert([
+      {
+        cube_id: cubeId,
+        user_id: user.id,
+        status: 'accepted',
+      },
+    ]);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async deletePendingInvitation(invitationId: string): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { error } = await supabase
+      .from('pending_invitations')
+      .delete()
+      .eq('id', invitationId);
 
     if (error) {
       throw error;

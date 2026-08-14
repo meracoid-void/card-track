@@ -11,14 +11,41 @@
     <mat-spinner diameter="50"></mat-spinner>
   </div>
 
-  <div *ngIf="!loading && participants.length === 0" class="empty-state">
+  <div *ngIf="!loading && participants.length === 0 && pendingInvitations.length === 0" class="empty-state">
     <mat-icon class="empty-icon">people</mat-icon>
     <h3>No participants yet</h3>
     <p *ngIf="isOwner">Invite users to join your cube!</p>
     <p *ngIf="!isOwner">Waiting for participants to join...</p>
   </div>
 
+  <!-- Pending Invitations Section -->
+  <div *ngIf="!loading && pendingInvitations.length > 0" class="pending-section">
+    <h3>Pending Invitations</h3>
+    <div class="pending-list">
+      <mat-card class="pending-item" *ngFor="let invitation of pendingInvitations">
+        <mat-card-content>
+          <p class="email">{{ invitation.email }}</p>
+          <p class="status">Status: {{ invitation.status }}</p>
+        </mat-card-content>
+        <mat-card-actions *ngIf="isOwner">
+          <button mat-button color="warn" (click)="deletePendingInvitation(invitation)">
+            <mat-icon>delete</mat-icon>
+            Remove
+          </button>
+        </mat-card-actions>
+        <mat-card-actions *ngIf="!isOwner && invitation.email.toLowerCase() === getCurrentUserEmail().toLowerCase()">
+          <button mat-button color="primary" (click)="acceptInvitation(invitation)">
+            <mat-icon>check</mat-icon>
+            Accept
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Active Participants Section -->
   <div *ngIf="!loading && participants.length > 0" class="participants-table-container">
+    <h3 *ngIf="pendingInvitations.length > 0">Active Participants</h3>
     <table mat-table [dataSource]="participants" class="participants-table">
       <ng-container matColumnDef="user">
         <th mat-header-cell *matHeaderCellDef>User ID</th>

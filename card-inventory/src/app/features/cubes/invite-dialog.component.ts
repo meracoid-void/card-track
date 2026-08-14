@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SupabaseDbService } from '../../core/db/supabase-db.service';
+import { SupabaseAuthService } from '../../core/auth/supabase-auth.service';
 
 export interface InviteDialogData {
   cubeId: string;
@@ -38,10 +39,11 @@ export class InviteDialogComponent {
     private dialogRef: MatDialogRef<InviteDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: InviteDialogData,
     private dbService: SupabaseDbService,
+    private authService: SupabaseAuthService,
     private snackBar: MatSnackBar
   ) {
     this.inviteForm = this.fb.group({
-      userId: ['', [Validators.required, Validators.minLength(1)]],
+      email: ['', [Validators.required, Validators.email]],
     });
   }
 
@@ -51,10 +53,10 @@ export class InviteDialogComponent {
     }
 
     this.loading = true;
-    const { userId } = this.inviteForm.value;
+    const { email } = this.inviteForm.value;
 
     try {
-      await this.dbService.inviteParticipant(this.data.cubeId, userId);
+      await this.dbService.inviteParticipantByEmail(this.data.cubeId, email);
       this.snackBar.open('Invitation sent successfully', '', { duration: 2000 });
       this.dialogRef.close(true);
     } catch (error) {
