@@ -1,0 +1,45 @@
+<div class="cube-cards-container">
+  <div class="cards-header">
+    <h2>Cards in Cube ({{ cards.length }})</h2>
+    <button *ngIf="isOwner" mat-raised-button color="primary" (click)="openAddCardDialog()">
+      <mat-icon>add</mat-icon>
+      Add Cards
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && cards.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">style</mat-icon>
+    <h3>No cards in this cube yet</h3>
+    <p *ngIf="isOwner">Add Yu-Gi-Oh cards to start building your drafting cube!</p>
+    <p *ngIf="!isOwner">The cube owner hasn't added any cards yet.</p>
+  </div>
+
+  <div *ngIf="!loading && cards.length > 0" class="cards-grid">
+    <mat-card class="card-item" *ngFor="let card of cards">
+      <div class="card-image-container" *ngIf="card.imageUrl">
+        <img [src]="card.imageUrl" [alt]="card.cardName" class="card-image" (error)="onImageError($event)">
+      </div>
+      <div class="card-placeholder" *ngIf="!card.imageUrl">
+        <mat-icon>style</mat-icon>
+      </div>
+      <mat-card-content>
+        <h4 class="card-name">{{ card.cardName }}</h4>
+        <p class="card-details" *ngIf="card.setName || card.cardNumber">
+          <span *ngIf="card.setName">{{ card.setName }}</span>
+          <span *ngIf="card.cardNumber && card.setName"> • </span>
+          <span *ngIf="card.cardNumber">#{{ card.cardNumber }}</span>
+        </p>
+      </mat-card-content>
+      <mat-card-actions *ngIf="isOwner">
+        <button mat-button color="warn" (click)="removeCard(card)">
+          <mat-icon>delete</mat-icon>
+          Remove
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

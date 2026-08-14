@@ -35,6 +35,10 @@ import { SupabaseAuthService } from './core/auth/supabase-auth.service';
         <mat-icon>inventory</mat-icon>
         Inventory
       </a>
+      <a mat-button routerLink="/cubes" class="nav-button">
+        <mat-icon>inventory_2</mat-icon>
+        Cubes
+      </a>
       <button mat-icon-button [matMenuTriggerFor]="menu" class="user-menu">
         <mat-icon>account_circle</mat-icon>
       </button>

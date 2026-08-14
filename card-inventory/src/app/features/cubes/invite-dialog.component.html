@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>Invite Participant</h2>
+<mat-dialog-content>
+  <p>Enter the User ID of the person you want to invite to this cube.</p>
+  <form [formGroup]="inviteForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>User ID</mat-label>
+      <input matInput formControlName="userId" placeholder="Enter user ID" required>
+      <mat-error *ngIf="inviteForm.get('userId')?.hasError('required')">
+        User ID is required
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="loading">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || inviteForm.invalid">
+    <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+    <span *ngIf="!loading">Send Invite</span>
+  </button>
+</mat-dialog-actions>

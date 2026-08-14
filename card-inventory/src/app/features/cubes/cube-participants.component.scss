@@ -1,0 +1,74 @@
+.cube-participants-container {
+  .participants-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+
+    .empty-icon {
+      font-size: 60px;
+      height: 60px;
+      width: 60px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    p {
+      color: #666;
+    }
+  }
+
+  .participants-table-container {
+    margin-top: 20px;
+
+    .participants-table {
+      width: 100%;
+
+      .user-id {
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #666;
+      }
+
+      mat-chip {
+        &.status-accepted {
+          background-color: #e8f5e9;
+          color: #2e7d32;
+        }
+
+        &.status-pending {
+          background-color: #fff3e0;
+          color: #e65100;
+        }
+
+        &.status-declined {
+          background-color: #ffebee;
+          color: #c62828;
+        }
+      }
+    }
+  }
+}

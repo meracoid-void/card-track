@@ -1,0 +1,60 @@
+<div class="cube-participants-container">
+  <div class="participants-header">
+    <h2>Participants ({{ participants.length }})</h2>
+    <button *ngIf="isOwner" mat-raised-button color="primary" (click)="openInviteDialog()">
+      <mat-icon>person_add</mat-icon>
+      Invite Participant
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && participants.length === 0" class="empty-state">
+    <mat-icon class="empty-icon">people</mat-icon>
+    <h3>No participants yet</h3>
+    <p *ngIf="isOwner">Invite users to join your cube!</p>
+    <p *ngIf="!isOwner">Waiting for participants to join...</p>
+  </div>
+
+  <div *ngIf="!loading && participants.length > 0" class="participants-table-container">
+    <table mat-table [dataSource]="participants" class="participants-table">
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef>User ID</th>
+        <td mat-cell *matCellDef="let participant">
+          <span class="user-id">{{ participant.userId }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let participant">
+          <mat-chip [ngClass]="getStatusChipClass(participant.status)">
+            {{ getStatusDisplay(participant.status) }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="joinedAt">
+        <th mat-header-cell *matHeaderCellDef>Joined</th>
+        <td mat-cell *matCellDef="let participant">
+          {{ participant.joinedAt | date:'short' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let participant">
+          <button *ngIf="isOwner" mat-button color="warn" (click)="removeParticipant(participant)">
+            <mat-icon>remove_circle</mat-icon>
+            Remove
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+</div>

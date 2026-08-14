@@ -1,0 +1,84 @@
+<div class="cube-detail-container">
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && cube" class="cube-content">
+    <div class="header">
+      <button mat-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Cubes
+      </button>
+      <div class="header-actions" *ngIf="isOwner">
+        <button mat-button (click)="editCube()">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+        <button mat-button color="warn" (click)="deleteCube()">
+          <mat-icon>delete</mat-icon>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <mat-card class="cube-info-card">
+      <mat-card-header>
+        <mat-card-title>{{ cube.name }}</mat-card-title>
+        <mat-card-subtitle *ngIf="cube.description">{{ cube.description }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="cube-meta">
+          <span>Created: {{ cube.createdAt | date:'mediumDate' }}</span>
+          <span *ngIf="cube.updatedAt !== cube.createdAt">• Updated: {{ cube.updatedAt | date:'mediumDate' }}</span>
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-tab-group class="cube-tabs">
+      <mat-tab label="Cards">
+        <div class="tab-content">
+          <app-cube-cards [cubeId]="cube.id" [isOwner]="isOwner"></app-cube-cards>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Participants">
+        <div class="tab-content">
+          <app-cube-participants [cubeId]="cube.id" [isOwner]="isOwner"></app-cube-participants>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Drafting Settings">
+        <div class="tab-content">
+          <div class="drafting-settings">
+            <h3>Drafting Configuration</h3>
+            <p class="settings-note">These settings are saved locally and don't affect the cube data in the database.</p>
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Max Participants</mat-label>
+              <input matInput type="number" [(ngModel)]="draftingSettings.maxParticipants" min="1" (ngModelChange)="saveDraftingSettings()">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Packs Per Person</mat-label>
+              <input matInput type="number" [(ngModel)]="draftingSettings.packsPerPerson" min="1" (ngModelChange)="saveDraftingSettings()">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Minimum Cards to Draft</mat-label>
+              <input matInput type="number" [(ngModel)]="draftingSettings.minCardsToDraft" min="1" (ngModelChange)="saveDraftingSettings()">
+            </mat-form-field>
+
+            <div class="settings-summary">
+              <h4>Current Settings:</h4>
+              <ul>
+                <li>Maximum Participants: {{ draftingSettings.maxParticipants }}</li>
+                <li>Packs Per Person: {{ draftingSettings.packsPerPerson }}</li>
+                <li>Minimum Cards to Draft: {{ draftingSettings.minCardsToDraft }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

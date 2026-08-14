@@ -1,0 +1,49 @@
+<h2 mat-dialog-title>Add Yu-Gi-Oh Cards to Cube</h2>
+<mat-dialog-content>
+  <form [formGroup]="searchForm" (ngSubmit)="search()">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Search Yu-Gi-Oh Cards</mat-label>
+      <input matInput formControlName="cardName" placeholder="Enter card name" (keyup.enter)="search()">
+      <button mat-icon-button matSuffix (click)="search()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+  </form>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && searched && results.length === 0" class="no-results">
+    <p>No Yu-Gi-Oh cards found matching your search.</p>
+  </div>
+
+  <div *ngIf="!loading && results.length > 0" class="results-container">
+    <p class="results-count">{{ results.length }} card(s) found</p>
+    <div class="cards-grid">
+      <mat-card class="search-result-card" *ngFor="let card of results">
+        <div class="card-image-container" *ngIf="card.imageUrl">
+          <img [src]="card.imageUrl" [alt]="getCardName(card)" class="card-image">
+        </div>
+        <div class="card-placeholder" *ngIf="!card.imageUrl">
+          <mat-icon>style</mat-icon>
+        </div>
+        <mat-card-content>
+          <h4 class="card-name">{{ getCardName(card) }}</h4>
+          <p class="card-details" *ngIf="getSetName(card)">
+            {{ getSetName(card) }}
+          </p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="addCardToCube(card)">
+            <mat-icon>add</mat-icon>
+            Add to Cube
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Close</button>
+</mat-dialog-actions>
