@@ -16,19 +16,9 @@ DROP POLICY IF EXISTS "Owners can invite participants" ON cube_participants;
 DROP POLICY IF EXISTS "Users can accept/decline their own invites" ON cube_participants;
 DROP POLICY IF EXISTS "Owners can remove participants" ON cube_participants;
 
--- Simplified RLS Policies for cubes table (no cross-table references)
+-- Simplified RLS Policies for cubes table (no cross-table references to avoid recursion)
 CREATE POLICY "Users can view their own cubes" ON cubes
   FOR SELECT USING (auth.uid() = owner_id);
-
-CREATE POLICY "Users can view cubes they participate in" ON cubes
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM cube_participants 
-      WHERE cube_participants.cube_id = cubes.id 
-      AND cube_participants.user_id = auth.uid() 
-      AND cube_participants.status = 'accepted'
-    )
-  );
 
 CREATE POLICY "Users can create cubes" ON cubes
   FOR INSERT WITH CHECK (auth.uid() = owner_id);

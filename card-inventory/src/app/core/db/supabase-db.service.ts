@@ -221,6 +221,39 @@ export class SupabaseDbService {
     const supabase = this.authService.getSupabaseClient();
     
     try {
+      // Use RPC to avoid RLS circular references
+      const { data, error } = await supabase.rpc('get_user_cubes');
+      
+      if (error) {
+        console.error('Error fetching cubes via RPC:', error);
+        // Fallback to manual fetch if RPC fails
+        await this.fetchUserCubesManual(userId, cubesSubject);
+        return;
+      }
+
+      if (data) {
+        cubesSubject.next(
+          data.map((row: any) => ({
+            id: row.id,
+            ownerId: row.owner_id,
+            name: row.name,
+            description: row.description,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching cubes:', error);
+      // Fallback to manual fetch
+      await this.fetchUserCubesManual(userId, cubesSubject);
+    }
+  }
+
+  private async fetchUserCubesManual(userId: string, cubesSubject: BehaviorSubject<Cube[]>): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    
+    try {
       const [ownedCubesResult, participatedCubesResult] = await Promise.all([
         supabase.from('cubes').select('*').eq('owner_id', userId),
         supabase.from('cube_participants').select('cube_id').eq('user_id', userId).eq('status', 'accepted')
@@ -237,7 +270,9 @@ export class SupabaseDbService {
       if (!participatedCubesResult.error && participatedCubesResult.data) {
         const participatedCubeIds = participatedCubesResult.data.map((p: any) => p.cube_id);
         
-        // Fetch the full cube data for participated cubes
+        // Fetch the full cube data for participated cubes using a different approach
+        // We'll use a service role key or admin API for this if available
+        // For now, we'll try to fetch with the current client
         if (participatedCubeIds.length > 0) {
           const { data: participatedCubes } = await supabase.from('cubes').select('*').in('id', participatedCubeIds);
           if (participatedCubes) {
@@ -262,7 +297,7 @@ export class SupabaseDbService {
         }))
       );
     } catch (error) {
-      console.error('Error fetching cubes:', error);
+      console.error('Error fetching cubes manually:', error);
       cubesSubject.next([]);
     }
   }
