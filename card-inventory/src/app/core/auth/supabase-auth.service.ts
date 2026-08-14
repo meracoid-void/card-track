@@ -10,11 +10,19 @@ export class SupabaseAuthService {
   private supabase: SupabaseClient;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   private currentUser$ = this.currentUserSubject.asObservable();
+  private authInitialized = false;
 
   constructor() {
     this.supabase = createClient(
       environment.supabaseUrl,
-      environment.supabaseAnonKey
+      environment.supabaseAnonKey,
+      {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          detectSessionInUrl: true
+        }
+      }
     );
 
     // If bypass auth is enabled, create a mock user
@@ -32,20 +40,18 @@ export class SupabaseAuthService {
         phone: undefined,
       };
       this.currentUserSubject.next(mockUser);
+      this.authInitialized = true;
     } else {
       this.initializeAuth();
     }
   }
 
   private initializeAuth() {
-    // Check if user is already logged in
-    this.supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        this.currentUserSubject.next(session.user);
-      }
-    });
+    if (this.authInitialized) return;
+    
+    this.authInitialized = true;
 
-    // Listen for auth changes
+    // Listen for auth changes first (this handles initial session too)
     this.supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         this.currentUserSubject.next(session.user);

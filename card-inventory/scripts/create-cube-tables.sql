@@ -51,9 +51,11 @@ CREATE POLICY "Users can view their own cubes" ON cubes
 
 CREATE POLICY "Users can view cubes they participate in" ON cubes
   FOR SELECT USING (
-    id IN (
-      SELECT cube_id FROM cube_participants 
-      WHERE user_id = auth.uid() AND status = 'accepted'
+    EXISTS (
+      SELECT 1 FROM cube_participants 
+      WHERE cube_participants.cube_id = cubes.id 
+      AND cube_participants.user_id = auth.uid() 
+      AND cube_participants.status = 'accepted'
     )
   );
 
@@ -67,15 +69,16 @@ CREATE POLICY "Owners can delete their cubes" ON cubes
   FOR DELETE USING (auth.uid() = owner_id);
 
 -- RLS Policies for cube_cards table
-CREATE POLICY "Users can view cards in their cubes" ON cube_cards
+CREATE POLICY "Users can view cards in cubes they own" ON cube_cards
+  FOR SELECT USING (
+    cube_id IN (SELECT id FROM cubes WHERE owner_id = auth.uid())
+  );
+
+CREATE POLICY "Users can view cards in cubes they participate in" ON cube_cards
   FOR SELECT USING (
     cube_id IN (
-      SELECT id FROM cubes 
-      WHERE owner_id = auth.uid() 
-      OR id IN (
-        SELECT cube_id FROM cube_participants 
-        WHERE user_id = auth.uid() AND status = 'accepted'
-      )
+      SELECT cube_id FROM cube_participants 
+      WHERE user_id = auth.uid() AND status = 'accepted'
     )
   );
 
@@ -90,15 +93,14 @@ CREATE POLICY "Owners can remove cards from their cubes" ON cube_cards
   );
 
 -- RLS Policies for cube_participants table
-CREATE POLICY "Users can view participants in their cubes" ON cube_participants
+CREATE POLICY "Users can view participants in cubes they own" ON cube_participants
   FOR SELECT USING (
-    cube_id IN (
-      SELECT id FROM cubes WHERE owner_id = auth.uid()
-      OR id IN (
-        SELECT cube_id FROM cube_participants 
-        WHERE user_id = auth.uid() AND status = 'accepted'
-      )
-    )
+    cube_id IN (SELECT id FROM cubes WHERE owner_id = auth.uid())
+  );
+
+CREATE POLICY "Users can view participants in cubes they participate in" ON cube_participants
+  FOR SELECT USING (
+    user_id = auth.uid()
   );
 
 CREATE POLICY "Owners can invite participants" ON cube_participants
