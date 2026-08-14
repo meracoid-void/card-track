@@ -317,26 +317,48 @@ export class SupabaseDbService {
       throw new Error('User not authenticated');
     }
 
-    const { data, error } = await supabase
-      .from('cubes')
-      .select('*')
-      .eq('id', cubeId)
-      .single();
+    // Use RPC to bypass RLS and get cube if user owns or participates in it
+    const { data, error } = await supabase.rpc('get_cube_by_id', { cube_id_param: cubeId });
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return null; // Not found
+      console.error('Error fetching cube via RPC:', error);
+      // Fallback to direct query if RPC fails
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('cubes')
+        .select('*')
+        .eq('id', cubeId)
+        .maybeSingle();
+
+      if (fallbackError) {
+        return null;
       }
-      throw error;
+
+      if (!fallbackData) {
+        return null;
+      }
+
+      return {
+        id: fallbackData.id,
+        ownerId: fallbackData.owner_id,
+        name: fallbackData.name,
+        description: fallbackData.description,
+        createdAt: fallbackData.created_at,
+        updatedAt: fallbackData.updated_at,
+      };
     }
 
+    if (!data || data.length === 0) {
+      return null;
+    }
+
+    const cubeData = data[0];
     return {
-      id: data.id,
-      ownerId: data.owner_id,
-      name: data.name,
-      description: data.description,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      id: cubeData.id,
+      ownerId: cubeData.owner_id,
+      name: cubeData.name,
+      description: cubeData.description,
+      createdAt: cubeData.created_at,
+      updatedAt: cubeData.updated_at,
     };
   }
 

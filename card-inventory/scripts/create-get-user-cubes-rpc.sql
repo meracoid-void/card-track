@@ -1,35 +1,16 @@
 -- Create a function to get user cubes (owned + participated) bypassing RLS
 CREATE OR REPLACE FUNCTION get_user_cubes()
-RETURNS TABLE (
-  id UUID,
-  owner_id UUID,
-  name TEXT,
-  description TEXT,
-  created_at TIMESTAMP WITH TIME ZONE,
-  updated_at TIMESTAMP WITH TIME ZONE
-)
+RETURNS SETOF cubes
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
   RETURN QUERY
-  SELECT 
-    c.id,
-    c.owner_id,
-    c.name,
-    c.description,
-    c.created_at,
-    c.updated_at
+  SELECT c.*
   FROM cubes c
   WHERE c.owner_id = auth.uid()
   UNION
-  SELECT 
-    c.id,
-    c.owner_id,
-    c.name,
-    c.description,
-    c.created_at,
-    c.updated_at
+  SELECT c.*
   FROM cubes c
   INNER JOIN cube_participants cp ON cp.cube_id = c.id
   WHERE cp.user_id = auth.uid()
