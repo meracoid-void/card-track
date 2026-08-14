@@ -211,11 +211,21 @@ export class SupabaseDbService {
 
     const cubesSubject = new BehaviorSubject<Cube[]>([]);
 
-    // Initial fetch - get cubes owned by user and cubes they participate in
-    Promise.all([
-      supabase.from('cubes').select('*').eq('owner_id', user.id),
-      supabase.from('cube_participants').select('cube_id').eq('user_id', user.id).eq('status', 'accepted')
-    ]).then(([ownedCubesResult, participatedCubesResult]) => {
+    // Simple fetch - get cubes owned by user and cubes they participate in
+    this.fetchUserCubes(user.id, cubesSubject);
+
+    return cubesSubject.asObservable();
+  }
+
+  private async fetchUserCubes(userId: string, cubesSubject: BehaviorSubject<Cube[]>): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    
+    try {
+      const [ownedCubesResult, participatedCubesResult] = await Promise.all([
+        supabase.from('cubes').select('*').eq('owner_id', userId),
+        supabase.from('cube_participants').select('cube_id').eq('user_id', userId).eq('status', 'accepted')
+      ]);
+
       const allCubes: any[] = [];
       
       // Add owned cubes
@@ -229,163 +239,39 @@ export class SupabaseDbService {
         
         // Fetch the full cube data for participated cubes
         if (participatedCubeIds.length > 0) {
-          supabase.from('cubes').select('*').in('id', participatedCubeIds).then(({ data, error }) => {
-            if (!error && data) {
-              // Combine and deduplicate
-              const combined = [...allCubes, ...data];
-              const uniqueCubes = combined.filter((cube, index, self) =>
-                index === self.findIndex((c) => c.id === cube.id)
-              );
-              
-              cubesSubject.next(
-                uniqueCubes.map((row: any) => ({
-                  id: row.id,
-                  ownerId: row.owner_id,
-                  name: row.name,
-                  description: row.description,
-                  createdAt: row.created_at,
-                  updatedAt: row.updated_at,
-                }))
-              );
-            } else {
-              // Error fetching participated cubes, just return owned cubes
-              cubesSubject.next(
-                allCubes.map((row: any) => ({
-                  id: row.id,
-                  ownerId: row.owner_id,
-                  name: row.name,
-                  description: row.description,
-                  createdAt: row.created_at,
-                  updatedAt: row.updated_at,
-                }))
-              );
-            }
-          });
-        } else {
-          // No participated cubes, just return owned cubes
-          cubesSubject.next(
-            allCubes.map((row: any) => ({
-              id: row.id,
-              ownerId: row.owner_id,
-              name: row.name,
-              description: row.description,
-              createdAt: row.created_at,
-              updatedAt: row.updated_at,
-            }))
-          );
+          const { data: participatedCubes } = await supabase.from('cubes').select('*').in('id', participatedCubeIds);
+          if (participatedCubes) {
+            allCubes.push(...participatedCubes);
+          }
         }
-      } else {
-        // No participated cubes or error, just return owned cubes
-        cubesSubject.next(
-          allCubes.map((row: any) => ({
-            id: row.id,
-            ownerId: row.owner_id,
-            name: row.name,
-            description: row.description,
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
-          }))
-        );
       }
-    }).catch((error) => {
+
+      // Deduplicate cubes
+      const uniqueCubes = allCubes.filter((cube, index, self) =>
+        index === self.findIndex((c) => c.id === cube.id)
+      );
+      
+      cubesSubject.next(
+        uniqueCubes.map((row: any) => ({
+          id: row.id,
+          ownerId: row.owner_id,
+          name: row.name,
+          description: row.description,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        }))
+      );
+    } catch (error) {
       console.error('Error fetching cubes:', error);
       cubesSubject.next([]);
-    });
+    }
+  }
 
-    // Set up real-time listener for cubes the user owns and participant changes
-    const subscription = supabase
-      .channel('cubes-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cubes',
-          filter: `owner_id=eq.${user.id}`,
-        },
-        (payload: any) => {
-          const cubeData = payload.new || payload.old;
-
-          if (payload.eventType === 'INSERT') {
-            const newCube: Cube = {
-              id: cubeData.id,
-              ownerId: cubeData.owner_id,
-              name: cubeData.name,
-              description: cubeData.description,
-              createdAt: cubeData.created_at,
-              updatedAt: cubeData.updated_at,
-            };
-            const current = cubesSubject.value;
-            cubesSubject.next([...current, newCube]);
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedCube: Cube = {
-              id: cubeData.id,
-              ownerId: cubeData.owner_id,
-              name: cubeData.name,
-              description: cubeData.description,
-              createdAt: cubeData.created_at,
-              updatedAt: cubeData.updated_at,
-            };
-            const current = cubesSubject.value;
-            const index = current.findIndex((c) => c.id === updatedCube.id);
-            if (index >= 0) {
-              current[index] = updatedCube;
-              cubesSubject.next([...current]);
-            }
-          } else if (payload.eventType === 'DELETE') {
-            const current = cubesSubject.value;
-            cubesSubject.next(current.filter((c) => c.id !== cubeData.id));
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cube_participants',
-          filter: `user_id=eq.${user.id}`,
-        },
-        async (payload: any) => {
-          const participantData = payload.new || payload.old;
-          const cubeId = participantData.cube_id;
-          const status = participantData.status;
-
-          // Handle participant status changes
-          if (payload.eventType === 'INSERT' || (payload.eventType === 'UPDATE' && status === 'accepted')) {
-            // User was invited or accepted invitation - fetch the cube
-            const { data: cubeData } = await supabase.from('cubes').select('*').eq('id', cubeId).single();
-            if (cubeData) {
-              const newCube: Cube = {
-                id: cubeData.id,
-                ownerId: cubeData.owner_id,
-                name: cubeData.name,
-                description: cubeData.description,
-                createdAt: cubeData.created_at,
-                updatedAt: cubeData.updated_at,
-              };
-              const current = cubesSubject.value;
-              if (!current.find((c) => c.id === newCube.id)) {
-                cubesSubject.next([...current, newCube]);
-              }
-            }
-          } else if (payload.eventType === 'UPDATE' && status !== 'accepted') {
-            // User declined or was removed - remove the cube
-            const current = cubesSubject.value;
-            cubesSubject.next(current.filter((c) => c.id !== cubeId));
-          } else if (payload.eventType === 'DELETE') {
-            // Participant was removed - remove the cube if user doesn't own it
-            const current = cubesSubject.value;
-            const cubeToRemove = current.find((c) => c.id === cubeId);
-            if (cubeToRemove && cubeToRemove.ownerId !== user.id) {
-              cubesSubject.next(current.filter((c) => c.id !== cubeId));
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return cubesSubject.asObservable();
+  refreshUserCubes(): void {
+    const user = this.getCurrentUser();
+    if (user) {
+      // This would need to be called from components, for now we'll implement a simpler approach
+    }
   }
 
   async getCubeById(cubeId: string): Promise<Cube | null> {
@@ -540,71 +426,39 @@ export class SupabaseDbService {
 
     const cardsSubject = new BehaviorSubject<CubeCard[]>([]);
 
-    // Set up real-time listener first
-    const channel = supabase
-      .channel(`cube-cards-${cubeId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cube_cards',
-          filter: `cube_id=eq.${cubeId}`,
-        },
-        (payload: any) => {
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            const newCard: CubeCard = {
-              id: payload.new.id,
-              cubeId: payload.new.cube_id,
-              cardId: payload.new.card_id,
-              cardName: payload.new.card_name,
-              imageUrl: payload.new.image_url,
-              setName: payload.new.set_name,
-              cardNumber: payload.new.card_number,
-              addedAt: payload.new.added_at,
-            };
-
-            const current = cardsSubject.value;
-            const index = current.findIndex((c) => c.id === newCard.id);
-            if (index >= 0) {
-              current[index] = newCard;
-            } else {
-              current.push(newCard);
-            }
-            cardsSubject.next([...current]);
-          } else if (payload.eventType === 'DELETE') {
-            const current = cardsSubject.value;
-            cardsSubject.next(current.filter((c) => c.id !== payload.old.id));
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          // After subscription is active, do initial fetch
-          supabase
-            .from('cube_cards')
-            .select('*')
-            .eq('cube_id', cubeId)
-            .then(({ data, error }) => {
-              if (!error && data) {
-                cardsSubject.next(
-                  data.map((row: any) => ({
-                    id: row.id,
-                    cubeId: row.cube_id,
-                    cardId: row.card_id,
-                    cardName: row.card_name,
-                    imageUrl: row.image_url,
-                    setName: row.set_name,
-                    cardNumber: row.card_number,
-                    addedAt: row.added_at,
-                  }))
-                );
-              }
-            });
-        }
-      });
+    // Simple fetch
+    this.fetchCubeCards(cubeId, cardsSubject);
 
     return cardsSubject.asObservable();
+  }
+
+  private async fetchCubeCards(cubeId: string, cardsSubject: BehaviorSubject<CubeCard[]>): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    
+    try {
+      const { data, error } = await supabase
+        .from('cube_cards')
+        .select('*')
+        .eq('cube_id', cubeId);
+      
+      if (!error && data) {
+        cardsSubject.next(
+          data.map((row: any) => ({
+            id: row.id,
+            cubeId: row.cube_id,
+            cardId: row.card_id,
+            cardName: row.card_name,
+            imageUrl: row.image_url,
+            setName: row.set_name,
+            cardNumber: row.card_number,
+            addedAt: row.added_at,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error('Error fetching cube cards:', err);
+      cardsSubject.next([]);
+    }
   }
 
   async inviteParticipant(cubeId: string, userId: string): Promise<void> {
@@ -695,65 +549,36 @@ export class SupabaseDbService {
 
     const participantsSubject = new BehaviorSubject<CubeParticipant[]>([]);
 
-    // Set up real-time listener first
-    const channel = supabase
-      .channel(`cube-participants-${cubeId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cube_participants',
-          filter: `cube_id=eq.${cubeId}`,
-        },
-        (payload: any) => {
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            const newParticipant: CubeParticipant = {
-              id: payload.new.id,
-              cubeId: payload.new.cube_id,
-              userId: payload.new.user_id,
-              status: payload.new.status,
-              joinedAt: payload.new.joined_at,
-            };
-
-            const current = participantsSubject.value;
-            const index = current.findIndex((p) => p.id === newParticipant.id);
-            if (index >= 0) {
-              current[index] = newParticipant;
-            } else {
-              current.push(newParticipant);
-            }
-            participantsSubject.next([...current]);
-          } else if (payload.eventType === 'DELETE') {
-            const current = participantsSubject.value;
-            participantsSubject.next(current.filter((p) => p.id !== payload.old.id));
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          // After subscription is active, do initial fetch
-          supabase
-            .from('cube_participants')
-            .select('*')
-            .eq('cube_id', cubeId)
-            .then(({ data, error }) => {
-              if (!error && data) {
-                participantsSubject.next(
-                  data.map((row: any) => ({
-                    id: row.id,
-                    cubeId: row.cube_id,
-                    userId: row.user_id,
-                    status: row.status,
-                    joinedAt: row.joined_at,
-                  }))
-                );
-              }
-            });
-        }
-      });
+    // Simple fetch
+    this.fetchCubeParticipants(cubeId, participantsSubject);
 
     return participantsSubject.asObservable();
+  }
+
+  private async fetchCubeParticipants(cubeId: string, participantsSubject: BehaviorSubject<CubeParticipant[]>): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    
+    try {
+      const { data, error } = await supabase
+        .from('cube_participants')
+        .select('*')
+        .eq('cube_id', cubeId);
+      
+      if (!error && data) {
+        participantsSubject.next(
+          data.map((row: any) => ({
+            id: row.id,
+            cubeId: row.cube_id,
+            userId: row.user_id,
+            status: row.status,
+            joinedAt: row.joined_at,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error('Error fetching cube participants:', err);
+      participantsSubject.next([]);
+    }
   }
 
   async removeParticipant(cubeId: string, participantId: string): Promise<void> {

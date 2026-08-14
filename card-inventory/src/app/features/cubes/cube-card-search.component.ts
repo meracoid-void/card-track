@@ -17,6 +17,7 @@ import { SupabaseDbService } from '../../core/db/supabase-db.service';
 
 export interface CubeCardSearchData {
   cubeId: string;
+  refreshCallback?: () => void;
 }
 
 @Component({
@@ -113,6 +114,11 @@ export class CubeCardSearchComponent {
         cardNumber: card.cardNumber,
       });
       this.snackBar.open('Card added to cube!', '', { duration: 2000 });
+      
+      // Call refresh callback if provided
+      if (this.data.refreshCallback) {
+        this.data.refreshCallback();
+      }
     } catch (error) {
       console.error('Error adding card to cube:', error);
       this.snackBar.open('Failed to add card to cube', '', { duration: 3000 });

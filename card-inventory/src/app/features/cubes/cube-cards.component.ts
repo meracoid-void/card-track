@@ -65,12 +65,13 @@ export class CubeCardsComponent implements OnInit, OnDestroy {
   openAddCardDialog(): void {
     const dialogRef = this.dialog.open(CubeCardSearchComponent, {
       width: '800px',
-      data: { cubeId: this.cubeId }
+      data: { cubeId: this.cubeId, refreshCallback: () => this.loadCards() }
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // Dialog was closed successfully
+        this.loadCards(); // Refresh cards when dialog closes
       }
     });
   }
@@ -80,6 +81,7 @@ export class CubeCardsComponent implements OnInit, OnDestroy {
       this.dbService.removeCardFromCubeById(card.id).then(
         () => {
           this.snackBar.open('Card copy removed from cube', '', { duration: 2000 });
+          this.loadCards(); // Refresh the card list
         },
         (error) => {
           this.snackBar.open('Failed to remove card', '', { duration: 3000 });
