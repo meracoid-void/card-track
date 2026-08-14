@@ -107,17 +107,6 @@ export class CubeCardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getCardCount(cardId: string): number {
-    return this.cards.filter(card => card.cardId === cardId).length;
-  }
-
-  getUniqueCards(): CubeCard[] {
-    const uniqueCardIds = [...new Set(this.cards.map(card => card.cardId))];
-    return uniqueCardIds.map(cardId => 
-      this.cards.find(card => card.cardId === cardId)!
-    );
-  }
-
   getCardImage(card: CubeCard): string {
     return card.imageUrl || '';
   }
