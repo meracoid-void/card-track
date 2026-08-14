@@ -48,11 +48,25 @@
   }
 
   .card-item {
+    position: relative;
     transition: transform 0.2s, box-shadow 0.2s;
 
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-count-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background-color: #1976d2;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      z-index: 1;
     }
 
     .card-image-container {

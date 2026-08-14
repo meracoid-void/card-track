@@ -421,6 +421,24 @@ export class SupabaseDbService {
     }
   }
 
+  async removeCardFromCubeById(cardRowId: string): Promise<void> {
+    const supabase = this.authService.getSupabaseClient();
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { error } = await supabase
+      .from('cube_cards')
+      .delete()
+      .eq('id', cardRowId);
+
+    if (error) {
+      throw error;
+    }
+  }
+
   getCubeCards$(cubeId: string): Observable<CubeCard[]> {
     const supabase = this.authService.getSupabaseClient();
     const user = this.getCurrentUser();

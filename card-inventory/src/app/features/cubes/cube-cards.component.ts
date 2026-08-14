@@ -76,16 +76,27 @@ export class CubeCardsComponent implements OnInit, OnDestroy {
   }
 
   removeCard(card: CubeCard): void {
-    if (confirm(`Remove ${card.cardName} from this cube?`)) {
-      this.dbService.removeCardFromCube(this.cubeId, card.cardId).then(
+    if (confirm(`Remove one copy of ${card.cardName} from this cube?`)) {
+      this.dbService.removeCardFromCubeById(card.id).then(
         () => {
-          this.snackBar.open('Card removed from cube', '', { duration: 2000 });
+          this.snackBar.open('Card copy removed from cube', '', { duration: 2000 });
         },
         (error) => {
           this.snackBar.open('Failed to remove card', '', { duration: 3000 });
         }
       );
     }
+  }
+
+  getCardCount(cardId: string): number {
+    return this.cards.filter(card => card.cardId === cardId).length;
+  }
+
+  getUniqueCards(): CubeCard[] {
+    const uniqueCardIds = [...new Set(this.cards.map(card => card.cardId))];
+    return uniqueCardIds.map(cardId => 
+      this.cards.find(card => card.cardId === cardId)!
+    );
   }
 
   getCardImage(card: CubeCard): string {

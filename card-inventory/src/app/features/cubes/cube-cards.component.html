@@ -1,6 +1,6 @@
 <div class="cube-cards-container">
   <div class="cards-header">
-    <h2>Cards in Cube ({{ cards.length }})</h2>
+    <h2>Cards in Cube ({{ cards.length }} total, {{ getUniqueCards().length }} unique)</h2>
     <button *ngIf="isOwner" mat-raised-button color="primary" (click)="openAddCardDialog()">
       <mat-icon>add</mat-icon>
       Add Cards
@@ -20,6 +20,9 @@
 
   <div *ngIf="!loading && cards.length > 0" class="cards-grid">
     <mat-card class="card-item" *ngFor="let card of cards">
+      <div class="card-count-badge" *ngIf="getCardCount(card.cardId) > 1">
+        {{ getCardCount(card.cardId) }}x
+      </div>
       <div class="card-image-container" *ngIf="card.imageUrl">
         <img [src]="card.imageUrl" [alt]="card.cardName" class="card-image" (error)="onImageError($event)">
       </div>
@@ -37,7 +40,7 @@
       <mat-card-actions *ngIf="isOwner">
         <button mat-button color="warn" (click)="removeCard(card)">
           <mat-icon>delete</mat-icon>
-          Remove
+          Remove Copy
         </button>
       </mat-card-actions>
     </mat-card>
