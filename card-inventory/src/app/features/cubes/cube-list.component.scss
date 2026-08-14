@@ -23,6 +23,36 @@
   min-height: 200px;
 }
 
+.pending-invitations-section {
+  margin-bottom: 30px;
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .invitations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+
+    .invitation-card {
+      border-left: 4px solid #ff9800;
+
+      .invitation-info {
+        margin: 0 0 8px 0;
+
+        .label {
+          font-weight: 600;
+          color: #666;
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;

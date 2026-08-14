@@ -7,11 +7,45 @@
     </button>
   </div>
 
+  <!-- Pending Invitations Section -->
+  <div *ngIf="!loadingInvitations && pendingInvitations.length > 0" class="pending-invitations-section">
+    <h2>Pending Invitations</h2>
+    <div class="invitations-grid">
+      <mat-card class="invitation-card" *ngFor="let invitation of pendingInvitations">
+        <mat-card-header>
+          <mat-card-title>Cube Invitation</mat-card-title>
+          <mat-card-subtitle>Invited to join a cube</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="invitation-info">
+            <span class="label">Cube ID:</span> {{ invitation.cubeId }}
+          </p>
+          <p class="invitation-info">
+            <span class="label">Email:</span> {{ invitation.email }}
+          </p>
+          <p class="invitation-info">
+            <span class="label">Sent:</span> {{ invitation.createdAt | date:'short' }}
+          </p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="acceptInvitation(invitation)">
+            <mat-icon>check</mat-icon>
+            Accept
+          </button>
+          <button mat-button (click)="declineInvitation(invitation)">
+            <mat-icon>close</mat-icon>
+            Decline
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+
   <div *ngIf="loading" class="loading-container">
     <mat-spinner diameter="50"></mat-spinner>
   </div>
 
-  <div *ngIf="!loading && cubes.length === 0" class="empty-state">
+  <div *ngIf="!loading && cubes.length === 0 && pendingInvitations.length === 0" class="empty-state">
     <mat-icon class="empty-icon">inventory_2</mat-icon>
     <h2>No cubes yet</h2>
     <p>Create your first Yu-Gi-Oh cube to get started with drafting!</p>

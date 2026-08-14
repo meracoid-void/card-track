@@ -8,7 +8,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SupabaseDbService } from '../../core/db/supabase-db.service';
-import { Cube } from '../../models';
+import { SupabaseAuthService } from '../../core/auth/supabase-auth.service';
+import { Cube, PendingInvitation } from '../../models';
 
 @Component({
   selector: 'app-cube-list',
@@ -28,9 +29,12 @@ import { Cube } from '../../models';
 export class CubeListComponent implements OnInit {
   cubes: Cube[] = [];
   loading = true;
+  pendingInvitations: PendingInvitation[] = [];
+  loadingInvitations = true;
 
   constructor(
     private dbService: SupabaseDbService,
+    private authService: SupabaseAuthService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {}
@@ -47,6 +51,59 @@ export class CubeListComponent implements OnInit {
         this.loading = false;
       }
     );
+    this.loadPendingInvitations();
+  }
+
+  async loadPendingInvitations(): Promise<void> {
+    this.loadingInvitations = true;
+    try {
+      // Get all pending invitations for the current user's email
+      const user = this.authService.getCurrentUser();
+      if (user && user.email) {
+        const { data, error } = await this.authService.getSupabaseClient()
+          .from('pending_invitations')
+          .select('*')
+          .eq('email', user.email.toLowerCase())
+          .eq('status', 'pending');
+        
+        if (!error && data) {
+          this.pendingInvitations = data.map((row: any) => ({
+            id: row.id,
+            cubeId: row.cube_id,
+            email: row.email,
+            status: row.status,
+            createdAt: row.created_at,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading pending invitations:', error);
+    } finally {
+      this.loadingInvitations = false;
+    }
+  }
+
+  async acceptInvitation(invitation: PendingInvitation): Promise<void> {
+    try {
+      await this.dbService.acceptEmailInvitation(invitation.cubeId, invitation.email);
+      this.snackBar.open('Invitation accepted!', '', { duration: 2000 });
+      // Remove from pending and reload cubes
+      this.pendingInvitations = this.pendingInvitations.filter(i => i.id !== invitation.id);
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      this.snackBar.open('Failed to accept invitation', '', { duration: 3000 });
+    }
+  }
+
+  async declineInvitation(invitation: PendingInvitation): Promise<void> {
+    try {
+      await this.dbService.deletePendingInvitation(invitation.id);
+      this.snackBar.open('Invitation declined', '', { duration: 2000 });
+      this.pendingInvitations = this.pendingInvitations.filter(i => i.id !== invitation.id);
+    } catch (error) {
+      console.error('Error declining invitation:', error);
+      this.snackBar.open('Failed to decline invitation', '', { duration: 3000 });
+    }
   }
 
   navigateToCube(cubeId: string): void {
