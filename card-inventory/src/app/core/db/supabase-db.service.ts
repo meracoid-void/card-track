@@ -292,7 +292,7 @@ export class SupabaseDbService {
       cubesSubject.next([]);
     });
 
-    // Set up real-time listener for cubes the user owns
+    // Set up real-time listener for cubes the user owns and participant changes
     const subscription = supabase
       .channel('cubes-updates')
       .on(
@@ -540,30 +540,8 @@ export class SupabaseDbService {
 
     const cardsSubject = new BehaviorSubject<CubeCard[]>([]);
 
-    // Initial fetch
-    supabase
-      .from('cube_cards')
-      .select('*')
-      .eq('cube_id', cubeId)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          cardsSubject.next(
-            data.map((row: any) => ({
-              id: row.id,
-              cubeId: row.cube_id,
-              cardId: row.card_id,
-              cardName: row.card_name,
-              imageUrl: row.image_url,
-              setName: row.set_name,
-              cardNumber: row.card_number,
-              addedAt: row.added_at,
-            }))
-          );
-        }
-      });
-
-    // Set up real-time listener
-    const subscription = supabase
+    // Set up real-time listener first
+    const channel = supabase
       .channel(`cube-cards-${cubeId}`)
       .on(
         'postgres_changes',
@@ -600,7 +578,31 @@ export class SupabaseDbService {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // After subscription is active, do initial fetch
+          supabase
+            .from('cube_cards')
+            .select('*')
+            .eq('cube_id', cubeId)
+            .then(({ data, error }) => {
+              if (!error && data) {
+                cardsSubject.next(
+                  data.map((row: any) => ({
+                    id: row.id,
+                    cubeId: row.cube_id,
+                    cardId: row.card_id,
+                    cardName: row.card_name,
+                    imageUrl: row.image_url,
+                    setName: row.set_name,
+                    cardNumber: row.card_number,
+                    addedAt: row.added_at,
+                  }))
+                );
+              }
+            });
+        }
+      });
 
     return cardsSubject.asObservable();
   }
@@ -693,27 +695,8 @@ export class SupabaseDbService {
 
     const participantsSubject = new BehaviorSubject<CubeParticipant[]>([]);
 
-    // Initial fetch
-    supabase
-      .from('cube_participants')
-      .select('*')
-      .eq('cube_id', cubeId)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          participantsSubject.next(
-            data.map((row: any) => ({
-              id: row.id,
-              cubeId: row.cube_id,
-              userId: row.user_id,
-              status: row.status,
-              joinedAt: row.joined_at,
-            }))
-          );
-        }
-      });
-
-    // Set up real-time listener
-    const subscription = supabase
+    // Set up real-time listener first
+    const channel = supabase
       .channel(`cube-participants-${cubeId}`)
       .on(
         'postgres_changes',
@@ -747,7 +730,28 @@ export class SupabaseDbService {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // After subscription is active, do initial fetch
+          supabase
+            .from('cube_participants')
+            .select('*')
+            .eq('cube_id', cubeId)
+            .then(({ data, error }) => {
+              if (!error && data) {
+                participantsSubject.next(
+                  data.map((row: any) => ({
+                    id: row.id,
+                    cubeId: row.cube_id,
+                    userId: row.user_id,
+                    status: row.status,
+                    joinedAt: row.joined_at,
+                  }))
+                );
+              }
+            });
+        }
+      });
 
     return participantsSubject.asObservable();
   }
